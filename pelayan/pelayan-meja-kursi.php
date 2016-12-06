@@ -7,49 +7,36 @@
                     <hr>
                 </div>
                 <div class="services-wrapper">
-                    <div class="col-md-12">
-                        <div class="col-md-3 pull-left">
-                            <a href="pelayan-waiting-list.html" class="btn btn-danger" role="button">Waiting list <span class="badge">3</span></a>
-                        </div>
-                        <div class="col-md-6 pull-right">
-                            <div class="col-md-4">
-                                <h5>Cari meja berdasarkan : </h5>
-                            </div>
-                            <div class="col-md-4">
-                                <form method="post">
-                                <select class="form-control" name="kapasitas">
-                                    <option>Kapasitas</option>
-                                    <option value="2">2 Orang</option>
-                                    <option value="4">4 Orang</option>
-                                    <option value="10">10 Orang</option>
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <input type="submit" name="cari" value="cari" class="btn btn-primary">
-                                </form> <!-- </form>  -->
-                            </div>
-                        </div>
+                    <div class="col-md-1 pull-left">
+                        <a href="?pelayan=pelayan-waiting-list" class="btn btn-danger" role="button">Waiting list <span class="badge">
+                            <?php  
+                                $query = mysql_query("SELECT * FROM data_waitinglist");
+                                $row = mysql_num_rows($query);
+                                echo $row;
+                            ?>
+                        </span></a>
                     </div>
                     <br><br><br>
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>No Meja</th>
-                                <th>Kapasitas</th>
-                                <th>Status</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                                if (isset($_POST['cari'])) {
-                                    hasilCari();
-                                }else
+                    <div class="dataTable_wrapper">
+                        <table class="table table-striped table-hover" id="dataTables-example">
+                            <thead>
+                                <tr>
+                                    <td>No</td>
+                                    <td>No Meja</td>
+                                    <td>Kapasitas</td>
+                                    <td>Status</td>
+                                    <td>Aksi</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
                                     tampilData();
-                            ?>
-                        </tbody>
-                    </table>
+                                    if(isset($_POST['proses']))
+                                        tambahPesanan();
+                                ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -57,26 +44,6 @@
     </div>
     <!-- /.container -->
 </section>
-
- <div class="modal fade pg-show-modal" id="modal1" tabindex="-1" role="dialog" aria-hidden="true"> 
-    <div class="modal-dialog"> 
-        <div class="modal-content"> 
-            <div class="modal-header"> 
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>                         
-                <h4 class="modal-title">Isi Nama Pelanggan</h4> 
-            </div>                     
-            <div class="modal-body"> 
-                <form method="post">
-                    
-                </form>
-            </div>                     
-            <div class="modal-footer"> 
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>                         
-                <button type="button" class="btn btn-primary">Save changes</button>                         
-            </div>                     
-        </div>                 
-    </div>             
-</div>
 
 <?php 
 function tampilData(){
@@ -86,29 +53,77 @@ function tampilData(){
         echo "<tr>
                 <td>$no</td>
                 <td>$data[kode_meja]</td>
-                <td>$data[kapasitas] Orang</td>
+                <td>$data[kapasitas]</td>
                 <td>$data[status]</td>
-                <td><input type='submit' value='Pilih' data-toggle='modal' data-target='#modal1' class='btn btn-info btn-xs'>
+                <td>
+                    <input type='button' name='view' value='pilih' id='$data[kode_meja]' class='view_data btn btn-xs btn-primary' />
                 </td>
         </tr>";
         $no++; //pertambahan no
     }
 }
 
-function hasilCari(){
-    $no = 1;
-    $cari = $_POST['kapasitas'];
-    $query = mysql_query("SELECT * FROM data_meja WHERE status='kosong' and kapasitas='$cari' ORDER BY kode_meja");
-    while ($data = mysql_fetch_assoc($query)) {
-        echo "<tr>
-                <td>$no</td>
-                <td>$data[kode_meja]</td>
-                <td>$data[kapasitas] Orang</td>
-                <td>$data[status]</td>
-                <td><input type='submit' value='Pilih' data-toggle='modal' data-target='#modal1' class='btn btn-info btn-xs'>
-                </td>
-        </tr>";
-        $no++; //pertambahan no
-    }
+function tambahPesanan(){
+    $kode_meja = $_POST['kode_meja'];
+    $pelanggan = $_POST['nama_pelanggan'];
+    $query = mysql_query("INSERT INTO data_pesanan VALUES('','1','$kode_meja','$pelanggan'") or die('tambah gagal!! '.mysql_error());
+    echo "<script>
+        alert('Berhasil');
+        window.location=\"?pelayan=pelayan-meja-kursi\"</script>
+    </script>";
 }
 ?>
+
+<div id="dataModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4>Employe Data</h4>
+            </div>
+            <div class="modal-body" >
+                 <form method="post" action="index.php?pelayan=tambah_pesanan">
+                    <div class="col-md-4">
+                        <label>Kode Meja </label>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" name="kode_meja" class="form-control" id="getKodeMeja" readonly>
+                    </div>
+                    <div class="clearfix clear-columns"></div><br>
+                    <div class="col-md-4">
+                        <label>Nama Pelanggan </label>
+                    </div>
+                    <div class="col-md-7">
+                        <input type="text" name="nama_pelanggan" class="form-control" id="nama_pelanggan">
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" type="button" data-dismiss="modal">close</button>
+                <button class="btn btn-primary" type="submit" name="tambah">Proses</button>
+                </form> 
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    $(document).ready(function(){
+        $(".view_data").click(function(){
+
+            var kode_meja = $(this).attr("id");
+
+            $.ajax({
+                url:"pelayan/getKodeMeja.php",
+                method:"post",
+                data:{kode_meja:kode_meja},
+                success:function(data){
+                    $("#getKodeMeja").val(data);
+                    $("#dataModal").modal("show");
+                }
+            }) 
+        });
+
+        
+    });
+</script>
